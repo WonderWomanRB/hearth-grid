@@ -1,0 +1,171 @@
+# Office Panel Dashboards
+#
+# Room-scoped dashboard for individual office spaces.
+# Shows room climate, lighting, and quick home status overview.
+#
+# Displays: 10" Raspberry Pi (per office)
+
+title: Office Control
+icon: mdi:home
+path: office
+views:
+  - path: climate
+    title: Climate
+    icon: mdi:thermometer
+    cards:
+      - type: heading
+        heading_tag: h1
+        heading: Office Climate
+
+      - type: grid
+        columns: 1
+        cards:
+          # Thermostat Control
+          - type: thermostat
+            entity: climate.office_thermostat
+            name: Office Climate
+
+          # Temperature Details
+          - type: entities
+            entities:
+              - entity: sensor.office_temperature
+                name: Current Temperature
+              - entity: sensor.office_humidity
+                name: Humidity
+              - entity: sensor.office_thermostat_setpoint
+                name: Setpoint
+              - entity: sensor.office_hvac_status
+                name: System Status
+            state_color: true
+
+          # Quick Adjust Buttons
+          - type: horizontal-stack
+            cards:
+              - type: button
+                name: Cooler
+                action_type: call-service
+                service: climate.set_temperature
+                service_data:
+                  entity_id: climate.office_thermostat
+                  temperature: "{{ (state_attr('climate.office_thermostat', 'current_temperature') - 1) | round(1) }}"
+                icon: mdi:minus-circle
+              - type: button
+                name: Warmer
+                action_type: call-service
+                service: climate.set_temperature
+                service_data:
+                  entity_id: climate.office_thermostat
+                  temperature: "{{ (state_attr('climate.office_thermostat', 'current_temperature') + 1) | round(1) }}"
+                icon: mdi:plus-circle
+
+  - path: lighting
+    title: Lighting
+    icon: mdi:lightbulb
+    cards:
+      - type: heading
+        heading_tag: h1
+        heading: Office Lighting
+
+      - type: grid
+        columns: 1
+        cards:
+          # Desk Light
+          - type: custom:stack-in-card
+            cards:
+              - type: heading
+                heading: Desk Light
+              - type: light
+                entity: light.office_desk
+
+          # Ceiling Light
+          - type: custom:stack-in-card
+            cards:
+              - type: heading
+                heading: Ceiling Light
+              - type: light
+                entity: light.office_ceiling
+
+          # Scenes / Presets
+          - type: horizontal-stack
+            cards:
+              - type: button
+                name: Work Mode
+                action_type: call-service
+                service: scene.turn_on
+                service_data:
+                  entity_id: scene.office_work
+                icon: mdi:briefcase
+              - type: button
+                name: Relax Mode
+                action_type: call-service
+                service: scene.turn_on
+                service_data:
+                  entity_id: scene.office_relax
+                icon: mdi:armchair
+
+  - path: home-status
+    title: Home Status
+    icon: mdi:home
+    cards:
+      - type: heading
+        heading_tag: h1
+        heading: Quick Home Status
+
+      - type: grid
+        columns: 1
+        cards:
+          # Dexcom Status (top priority)
+          - type: custom:stack-in-card
+            cards:
+              - type: heading
+                heading: Dad's Health
+              - type: gauge
+                entity: sensor.dexcom_glucose
+                min: 50
+                max: 300
+                segments:
+                  - from: 50
+                    to: 70
+                    color: red
+                  - from: 70
+                    to: 180
+                    color: green
+                  - from: 180
+                    color: orange
+              - type: entities
+                entities:
+                  - entity: sensor.dexcom_glucose_trend
+                  - entity: sensor.dexcom_last_reading_time
+
+          # Security Status
+          - type: custom:stack-in-card
+            cards:
+              - type: heading
+                heading: Security
+              - type: entities
+                entities:
+                  - entity: lock.front_door
+                    name: Front Door
+                  - entity: lock.back_door
+                    name: Back Door
+                  - entity: cover.front_gate
+                    name: Gate
+                  - entity: cover.garage_door
+                    name: Garage
+                state_color: true
+
+          # Quick Alerts
+          - type: custom:stack-in-card
+            cards:
+              - type: heading
+                heading: Recent Alerts
+              - type: entities
+                entities:
+                  - entity: sensor.last_important_notification
+                  - entity: sensor.gate_activity_summary
+
+          # Link to Full Dashboard
+          - type: button
+            name: View Full Dashboard
+            action_type: navigate
+            navigation_path: /dashboard-home/overview
