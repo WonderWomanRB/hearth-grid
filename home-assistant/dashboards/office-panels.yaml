@@ -8,16 +8,20 @@
 title: Office Control
 icon: mdi:home
 path: office
+
 views:
+  # ---------------------------------------------------------
+  # CLIMATE VIEW
+  # ---------------------------------------------------------
   - path: climate
     title: Climate
     icon: mdi:thermometer
     cards:
-      - type: heading
-        heading_tag: h1
-        heading: Office Climate
+      - type: title
+        title: Office Climate
 
       - type: grid
+        square: false
         columns: 1
         cards:
           # Thermostat Control
@@ -27,6 +31,7 @@ views:
 
           # Temperature Details
           - type: entities
+            state_color: true
             entities:
               - entity: sensor.office_temperature
                 name: Current Temperature
@@ -36,89 +41,136 @@ views:
                 name: Setpoint
               - entity: sensor.office_hvac_status
                 name: System Status
-            state_color: true
 
           # Quick Adjust Buttons
           - type: horizontal-stack
             cards:
               - type: button
                 name: Cooler
-                action_type: call-service
-                service: climate.set_temperature
-                service_data:
-                  entity_id: climate.office_thermostat
-                  temperature: "{{ (state_attr('climate.office_thermostat', 'current_temperature') - 1) | round(1) }}"
                 icon: mdi:minus-circle
+                tap_action:
+                  action: call-service
+                  service: climate.set_temperature
+                  service_data:
+                    entity_id: climate.office_thermostat
+                    temperature: >
+                      {{ (state_attr('climate.office_thermostat', 'current_temperature') - 1) | round(1) }}
+
               - type: button
                 name: Warmer
-                action_type: call-service
-                service: climate.set_temperature
-                service_data:
-                  entity_id: climate.office_thermostat
-                  temperature: "{{ (state_attr('climate.office_thermostat', 'current_temperature') + 1) | round(1) }}"
                 icon: mdi:plus-circle
+                tap_action:
+                  action: call-service
+                  service: climate.set_temperature
+                  service_data:
+                    entity_id: climate.office_thermostat
+                    temperature: >
+                      {{ (state_attr('climate.office_thermostat', 'current_temperature') + 1) | round(1) }}
 
+      # Navigation Buttons
+      - type: horizontal-stack
+        cards:
+          - type: button
+            name: Lighting
+            icon: mdi:lightbulb
+            tap_action:
+              action: navigate
+              navigation_path: /office/lighting
+          - type: button
+            name: Home Status
+            icon: mdi:home
+            tap_action:
+              action: navigate
+              navigation_path: /office/home-status
+
+  # ---------------------------------------------------------
+  # LIGHTING VIEW
+  # ---------------------------------------------------------
   - path: lighting
     title: Lighting
     icon: mdi:lightbulb
     cards:
-      - type: heading
-        heading_tag: h1
-        heading: Office Lighting
+      - type: title
+        title: Office Lighting
 
       - type: grid
+        square: false
         columns: 1
         cards:
           # Desk Light
           - type: custom:stack-in-card
             cards:
-              - type: heading
-                heading: Desk Light
+              - type: title
+                title: Desk Light
               - type: light
                 entity: light.office_desk
+                show_state: true
 
           # Ceiling Light
           - type: custom:stack-in-card
             cards:
-              - type: heading
-                heading: Ceiling Light
+              - type: title
+                title: Ceiling Light
               - type: light
                 entity: light.office_ceiling
+                show_state: true
 
           # Scenes / Presets
           - type: horizontal-stack
             cards:
               - type: button
                 name: Work Mode
-                action_type: call-service
-                service: scene.turn_on
-                service_data:
-                  entity_id: scene.office_work
                 icon: mdi:briefcase
+                tap_action:
+                  action: call-service
+                  service: scene.turn_on
+                  service_data:
+                    entity_id: scene.office_work
+
               - type: button
                 name: Relax Mode
-                action_type: call-service
-                service: scene.turn_on
-                service_data:
-                  entity_id: scene.office_relax
                 icon: mdi:armchair
+                tap_action:
+                  action: call-service
+                  service: scene.turn_on
+                  service_data:
+                    entity_id: scene.office_relax
 
+      # Navigation Buttons
+      - type: horizontal-stack
+        cards:
+          - type: button
+            name: Climate
+            icon: mdi:thermometer
+            tap_action:
+              action: navigate
+              navigation_path: /office/climate
+          - type: button
+            name: Home Status
+            icon: mdi:home
+            tap_action:
+              action: navigate
+              navigation_path: /office/home-status
+
+  # ---------------------------------------------------------
+  # HOME STATUS VIEW
+  # ---------------------------------------------------------
   - path: home-status
     title: Home Status
     icon: mdi:home
     cards:
-      - type: heading
-        heading_tag: h1
-        heading: Quick Home Status
+      - type: title
+        title: Quick Home Status
 
       - type: grid
+        square: false
         columns: 1
         cards:
-          # Dexcom Status (top priority)
+          # Dexcom Status
           - type: custom:stack-in-card
             cards:
-              - type: heading
-                heading: Dad's Health
+              - type: title
+                title: Dad's Health
               - type: gauge
                 entity: sensor.dexcom_glucose
                 min: 50
@@ -131,6 +183,7 @@ views:
                     to: 180
                     color: green
                   - from: 180
+                    to: 300
                     color: orange
               - type: entities
                 entities:
@@ -140,9 +193,10 @@ views:
           # Security Status
           - type: custom:stack-in-card
             cards:
-              - type: heading
-                heading: Security
+              - type: title
+                title: Security
               - type: entities
+                state_color: true
                 entities:
                   - entity: lock.front_door
                     name: Front Door
@@ -152,13 +206,12 @@ views:
                     name: Gate
                   - entity: cover.garage_door
                     name: Garage
-                state_color: true
 
           # Quick Alerts
           - type: custom:stack-in-card
             cards:
-              - type: heading
-                heading: Recent Alerts
+              - type: title
+                title: Recent Alerts
               - type: entities
                 entities:
                   - entity: sensor.last_important_notification
@@ -167,5 +220,23 @@ views:
           # Link to Full Dashboard
           - type: button
             name: View Full Dashboard
-            action_type: navigate
-            navigation_path: /dashboard-home/overview
+            icon: mdi:arrow-right-bold
+            tap_action:
+              action: navigate
+              navigation_path: /dashboard-home/overview
+
+      # Navigation Buttons
+      - type: horizontal-stack
+        cards:
+          - type: button
+            name: Climate
+            icon: mdi:thermometer
+            tap_action:
+              action: navigate
+              navigation_path: /office/climate
+          - type: button
+            name: Lighting
+            icon: mdi:lightbulb
+            tap_action:
+              action: navigate
+              navigation_path: /office/lighting
